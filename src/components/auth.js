@@ -4,14 +4,55 @@ import "./auth.css";
 class AuthPage extends Component {
   state = {
     email: "",
-    password: ""
+    password: "",
+    isLogin: true
   };
+
   handleInput = e => {
     this.setState({ [e.target.name]: e.target.value });
   };
+
   handleSubmit = e => {
     e.preventDefault();
-    console.log(this.state);
+    //console.log(this.state);
+    //if islogin is true ---->login
+    //if islogin is false --->create user
+    let queryBody = {
+      query: `
+         query {
+           login(email:"${this.state.email}",password:"${
+        this.state.password
+      }") {
+             userId
+             token
+             tokenExpiration
+           }
+         }
+      `
+    };
+
+    if (!this.state.isLogin) {
+      queryBody = {
+        query: `
+         mutation {
+           createUser(userInput:{email:"${this.state.email}",password:"${
+          this.state.password
+        }"}) {
+        _id
+        email
+      }
+         }
+      `
+      };
+    }
+
+    axios
+      .post(
+        "https://github-site-practice-infamousgodhand.c9users.io:8081/graphql",
+        queryBody
+      )
+      .then(res => console.log(res))
+      .catch(err => console.log(err));
   };
   render() {
     return (
@@ -38,7 +79,16 @@ class AuthPage extends Component {
         </div>
         <div className="form-action">
           <button type="submit">Submit</button>
-          <button type="button">Switch to SignUp</button>
+          <button
+            onClick={() =>
+              this.setState(prevState => {
+                return { isLogin: !prevState.isLogin };
+              })
+            }
+            type="button"
+          >
+            Switch to {this.state.isLogin ? "SignUp" : "Login"}
+          </button>
         </div>
       </form>
     );
