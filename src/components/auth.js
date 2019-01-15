@@ -1,12 +1,16 @@
 import React, { Component } from "react";
 import axios from "axios";
+import AuthContext from "../context/auth-context";
 import "./auth.css";
+
 class AuthPage extends Component {
   state = {
     email: "",
     password: "",
     isLogin: true
   };
+
+  static contextType = AuthContext;
 
   handleInput = e => {
     this.setState({ [e.target.name]: e.target.value });
@@ -51,10 +55,20 @@ class AuthPage extends Component {
         "https://github-site-practice-infamousgodhand.c9users.io:8081/graphql",
         queryBody
       )
-      .then(res => console.log(res))
+      .then(res => {
+        if (res.data.data.login.token) {
+          console.log(this.context.login);
+          this.context.login(
+            res.data.data.login.token,
+            res.data.data.login.userId,
+            res.data.data.login.tokenExpiration
+          );
+        }
+      })
       .catch(err => console.log(err));
   };
   render() {
+    //console.log(this.context.login);
     return (
       <form className="auth-form" onSubmit={this.handleSubmit}>
         <div className="form-control">
