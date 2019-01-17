@@ -8,6 +8,7 @@
     padding: 0 1rem;
     display: flex;
     align-items: center;
+    justify-content: space-between;
 }
 
 .main-navigation__logo h1 {
@@ -17,10 +18,13 @@
 
 .main-navigation__items {
     margin-left: 1.5rem;
+    margin-right: 1.5rem;
+
 }
 
 .main-navigation__items ul {
     display: flex;
+    align-items: center;
     list-style: none;
     padding: 0;
     margin: 0;
@@ -30,13 +34,20 @@
     margin: 0 1rem;
 }
 
-.main-navigation__items a {
+.main-navigation__items a,
+.main-navigation__items button {
     text-decoration: none;
     color: white;
+    border: none;
+    font: inherit;
+    background: transparent;
+    cursor: pointer;
+    margin: 0;
 }
 
 .main-navigation__items a:hover,
 .main-navigation__items a:active,
-.main-navigation__items a.active {
+.main-navigation__items button:hover,
+.main-navigation__items button:active {
     color: #DFEC36;
 }
