@@ -1,12 +1,16 @@
 import React, { Component } from "react";
 import Modal from "./modal/modal";
 import Backdrop from "./backdrop/backdrop";
+import axios from "axios";
 import "./events.css";
+import AuthContext from "../context/auth-context";
 
 class EventPage extends Component {
   state = {
     creating: false
   };
+
+  static contextType = AuthContext;
 
   constructor(props) {
     super(props);
@@ -29,7 +33,7 @@ class EventPage extends Component {
     this.setState({ creating: false });
     const title = this.titleRef.current.value;
     const date = this.dateRef.current.value;
-    const price = this.priceRef.current.value;
+    const price = +this.priceRef.current.value;
     const description = this.descriptionRef.current.value;
 
     const event = {
@@ -38,7 +42,40 @@ class EventPage extends Component {
       price,
       description
     };
-    console.log(event);
+    //console.log(event);
+
+    const queryBody = {
+      query: `
+         mutation {
+           createEvent(eventInput: {title: "${title}", description:"${description}", price: ${price}, date: "${date}"}) {
+             _id
+             title
+             description
+             date
+             price
+             creator {
+               _id
+               email
+             }
+           }
+         }
+      `
+    };
+
+    const token = this.context.token;
+
+    axios({
+      method: "post", //you can set what request you want to be
+      url:
+        "https://github-site-practice-infamousgodhand.c9users.io:8081/graphql",
+      data: queryBody,
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + token
+      }
+    })
+      .then(res => console.log(res))
+      .catch(err => console.log(err));
   };
 
   render() {
