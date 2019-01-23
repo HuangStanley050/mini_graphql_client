@@ -8,6 +8,14 @@ class EventPage extends Component {
     creating: false
   };
 
+  constructor(props) {
+    super(props);
+    this.titleRef = React.createRef();
+    this.dateRef = React.createRef();
+    this.priceRef = React.createRef();
+    this.descriptionRef = React.createRef();
+  }
+
   startCreateEventHandler = e => {
     this.setState({ creating: true });
   };
@@ -16,7 +24,22 @@ class EventPage extends Component {
     this.setState({ creating: false });
   };
 
-  onConfirmEventHandler = e => {};
+  onConfirmEventHandler = e => {
+    e.preventDefault();
+    this.setState({ creating: false });
+    const title = this.titleRef.current.value;
+    const date = this.dateRef.current.value;
+    const price = this.priceRef.current.value;
+    const description = this.descriptionRef.current.value;
+
+    const event = {
+      title,
+      date,
+      price,
+      description
+    };
+    console.log(event);
+  };
 
   render() {
     return (
@@ -30,7 +53,24 @@ class EventPage extends Component {
             canConfirm={true}
             canCancel={true}
           >
-            <p>Modal Content</p>
+            <form>
+              <div className="form-control">
+                <label htmlFor="Title">Title</label>
+                <input type="text" id="Title" ref={this.titleRef} />
+              </div>
+              <div className="form-control">
+                <label htmlFor="Price">Price</label>
+                <input type="number" id="Price" ref={this.priceRef} />
+              </div>
+              <div className="form-control">
+                <label htmlFor="Date">Date</label>
+                <input type="date" id="Date" ref={this.dateRef} />
+              </div>
+              <div className="form-control">
+                <label htmlFor="Description">Description</label>
+                <textarea rows="4" id="Description" ref={this.descriptionRef} />
+              </div>
+            </form>
           </Modal>
         ) : null}
         <div className="events-control">
