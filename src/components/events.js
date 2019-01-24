@@ -4,6 +4,7 @@ import Backdrop from "./backdrop/backdrop";
 import axios from "axios";
 import "./events.css";
 import AuthContext from "../context/auth-context";
+import EventList from "./events/eventList";
 
 class EventPage extends Component {
   state = {
@@ -126,13 +127,6 @@ class EventPage extends Component {
   };
 
   render() {
-    const eventList = this.state.events.map(event => {
-      return (
-        <li key={event._id} className="events__list-item">
-          {event.title}
-        </li>
-      );
-    });
     return (
       <React.Fragment>
         {this.state.creating ? <Backdrop /> : null}
@@ -172,7 +166,7 @@ class EventPage extends Component {
             </button>
           </div>
         )}
-        <ul className="events__list">{eventList}</ul>
+        <EventList events={this.state.events} />
       </React.Fragment>
     );
   }
