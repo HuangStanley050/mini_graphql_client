@@ -7,7 +7,8 @@ import AuthContext from "../context/auth-context";
 
 class EventPage extends Component {
   state = {
-    creating: false
+    creating: false,
+    events: []
   };
 
   static contextType = AuthContext;
@@ -20,12 +21,53 @@ class EventPage extends Component {
     this.descriptionRef = React.createRef();
   }
 
+  componentDidMount() {
+    this.fetchEvents();
+  }
+
   startCreateEventHandler = e => {
     this.setState({ creating: true });
   };
 
   onCancelEventHandler = e => {
     this.setState({ creating: false });
+  };
+
+  fetchEvents = () => {
+    const queryBody = {
+      query: ` query {
+                    events {
+                      _id
+                      title
+                      description
+                      date
+                      price
+                      creator {
+                        _id
+                        email
+                      }
+                    }
+        }
+      `
+    };
+    axios({
+      method: "post",
+      url:
+        "https://github-site-practice-infamousgodhand.c9users.io:8081/graphql",
+      data: queryBody,
+      headers: {
+        "Content-Type": "application/json"
+      }
+    })
+      .then(res => {
+        if (res.status !== 200 && res.status !== 201) {
+          throw new Error("Failed!");
+        }
+        const events = res.data.data.events;
+        this.setState({ events: events });
+        //console.log(events);
+      })
+      .catch(err => console.log(err));
   };
 
   onConfirmEventHandler = e => {
@@ -65,7 +107,7 @@ class EventPage extends Component {
     const token = this.context.token;
 
     axios({
-      method: "post", //you can set what request you want to be
+      method: "post",
       url:
         "https://github-site-practice-infamousgodhand.c9users.io:8081/graphql",
       data: queryBody,
@@ -74,11 +116,23 @@ class EventPage extends Component {
         Authorization: "Bearer " + token
       }
     })
-      .then(res => console.log(res))
+      .then(res => {
+        if (res.status !== 200 && res.status !== 201) {
+          throw new Error("Failed!");
+        }
+        this.fetchEvents();
+      })
       .catch(err => console.log(err));
   };
 
   render() {
+    const eventList = this.state.events.map(event => {
+      return (
+        <li key={event._id} className="events__list-item">
+          {event.title}
+        </li>
+      );
+    });
     return (
       <React.Fragment>
         {this.state.creating ? <Backdrop /> : null}
@@ -110,12 +164,15 @@ class EventPage extends Component {
             </form>
           </Modal>
         ) : null}
-        <div className="events-control">
-          <p>Share your event</p>
-          <button onClick={this.startCreateEventHandler} className="btn">
-            Create Event
-          </button>
-        </div>
+        {this.context.token && (
+          <div className="events-control">
+            <p>Share your event</p>
+            <button onClick={this.startCreateEventHandler} className="btn">
+              Create Event
+            </button>
+          </div>
+        )}
+        <ul className="events__list">{eventList}</ul>
       </React.Fragment>
     );
   }
