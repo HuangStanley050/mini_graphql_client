@@ -11,7 +11,8 @@ class EventPage extends Component {
   state = {
     creating: false,
     events: [],
-    isLoading: false
+    isLoading: false,
+    selectedEvent: null
   };
 
   static contextType = AuthContext;
@@ -33,7 +34,18 @@ class EventPage extends Component {
   };
 
   onCancelEventHandler = e => {
-    this.setState({ creating: false });
+    this.setState({ creating: false, selectedEvent: null });
+  };
+
+  showDetailHandler = eventId => {
+    this.setState(prevState => {
+      const selectedEvent = prevState.events.find(e => e._id === eventId);
+      return { selectedEvent: selectedEvent };
+    });
+  };
+
+  bookEventHandler = () => {
+    alert("booking");
   };
 
   fetchEvents = () => {
@@ -145,7 +157,8 @@ class EventPage extends Component {
   render() {
     return (
       <React.Fragment>
-        {this.state.creating ? <Backdrop /> : null}
+        {this.state.creating || this.state.selectedEvent ? <Backdrop /> : null}
+        {/*==============this is the create modal=============*/}
         {this.state.creating ? (
           <Modal
             onCancel={this.onCancelEventHandler}
@@ -153,6 +166,7 @@ class EventPage extends Component {
             title="Add Event"
             canConfirm={true}
             canCancel={true}
+            confirmText="Confirm"
           >
             <form>
               <div className="form-control">
@@ -174,6 +188,29 @@ class EventPage extends Component {
             </form>
           </Modal>
         ) : null}
+        {/*==============this is the create modal=============*/}
+
+        {/*=================this is detail Modal=============== */}
+        {this.state.selectedEvent ? (
+          <Modal
+            onCancel={this.onCancelEventHandler}
+            onConfirm={this.bookEventHandler}
+            title={this.state.selectedEvent.title}
+            canConfirm={true}
+            canCancel={true}
+            confirmText="Book"
+          >
+            <h1>{this.state.selectedEvent.title}</h1>
+            <h2>
+              {" "}
+              ${this.state.selectedEvent.price} -{" "}
+              {new Date(this.state.selectedEvent.date).toLocaleDateString()}
+            </h2>
+            <p>{this.state.selectedEvent.description}</p>
+          </Modal>
+        ) : null}
+        {/*==============this is the detail modal=============*/}
+
         {this.context.token && (
           <div className="events-control">
             <p>Share your event</p>
@@ -182,12 +219,14 @@ class EventPage extends Component {
             </button>
           </div>
         )}
+
         {this.state.isLoading ? (
           <Spinner />
         ) : (
           <EventList
             events={this.state.events}
             authUserId={this.context.userId}
+            onViewDetail={this.showDetailHandler}
           />
         )}
       </React.Fragment>
