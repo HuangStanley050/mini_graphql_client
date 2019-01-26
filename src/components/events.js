@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import Modal from "./modal/modal";
 import Backdrop from "./backdrop/backdrop";
 import axios from "axios";
+import Spinner from "./spinner/spinner";
 import "./events.css";
 import AuthContext from "../context/auth-context";
 import EventList from "./events/eventList";
@@ -9,7 +10,8 @@ import EventList from "./events/eventList";
 class EventPage extends Component {
   state = {
     creating: false,
-    events: []
+    events: [],
+    isLoading: false
   };
 
   static contextType = AuthContext;
@@ -35,6 +37,7 @@ class EventPage extends Component {
   };
 
   fetchEvents = () => {
+    this.setState({ isLoading: true });
     const queryBody = {
       query: ` query {
                     events {
@@ -65,10 +68,13 @@ class EventPage extends Component {
           throw new Error("Failed!");
         }
         const events = res.data.data.events;
-        this.setState({ events: events });
+        this.setState({ events: events, isLoading: false });
         //console.log(events);
       })
-      .catch(err => console.log(err));
+      .catch(err => {
+        this.setState({ isLoading: false });
+        console.log(err);
+      });
   };
 
   onConfirmEventHandler = e => {
@@ -96,10 +102,7 @@ class EventPage extends Component {
              description
              date
              price
-             creator {
-               _id
-               email
-             }
+             
            }
          }
       `
@@ -121,7 +124,20 @@ class EventPage extends Component {
         if (res.status !== 200 && res.status !== 201) {
           throw new Error("Failed!");
         }
-        this.fetchEvents();
+        this.setState(prevState => {
+          const updatedEvents = [...prevState.events];
+          updatedEvents.push({
+            _id: res.data.data.createEvent._id,
+            title: res.data.data.createEvent.title,
+            description: res.data.data.createEvent.description,
+            date: res.data.data.createEvent.date,
+            price: res.data.data.createEvent.price,
+            creator: {
+              _id: this.context.userId
+            }
+          });
+          return { events: updatedEvents };
+        });
       })
       .catch(err => console.log(err));
   };
@@ -166,10 +182,14 @@ class EventPage extends Component {
             </button>
           </div>
         )}
-        <EventList
-          events={this.state.events}
-          authUserId={this.context.userId}
-        />
+        {this.state.isLoading ? (
+          <Spinner />
+        ) : (
+          <EventList
+            events={this.state.events}
+            authUserId={this.context.userId}
+          />
+        )}
       </React.Fragment>
     );
   }
