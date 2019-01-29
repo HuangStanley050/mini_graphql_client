@@ -17,6 +17,8 @@ class EventPage extends Component {
 
   static contextType = AuthContext;
 
+  isActive = true;
+
   constructor(props) {
     super(props);
     this.titleRef = React.createRef();
@@ -45,7 +47,45 @@ class EventPage extends Component {
   };
 
   bookEventHandler = () => {
-    alert("booking");
+    if (!this.context.token) {
+      this.setState({ selectedEvent: null });
+      return;
+    }
+
+    const queryBody = {
+      query: ` mutation {
+                    bookEvent(eventId:"${this.state.selectedEvent._id}") {
+                      _id
+                      createdAt
+                      updatedAt
+                    }
+        }
+      `
+    };
+
+    const token = this.context.token;
+
+    axios({
+      method: "post",
+      url:
+        "https://github-site-practice-infamousgodhand.c9users.io:8081/graphql",
+      data: queryBody,
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + token
+      }
+    })
+      .then(res => {
+        if (res.status !== 200 && res.status !== 201) {
+          throw new Error("Failed!");
+        }
+
+        console.log(res.data);
+        this.setState({ selectedEvent: null });
+      })
+      .catch(err => {
+        console.log(err);
+      });
   };
 
   fetchEvents = () => {
@@ -80,11 +120,15 @@ class EventPage extends Component {
           throw new Error("Failed!");
         }
         const events = res.data.data.events;
-        this.setState({ events: events, isLoading: false });
+        if (this.isActive) {
+          this.setState({ events: events, isLoading: false });
+        }
         //console.log(events);
       })
       .catch(err => {
-        this.setState({ isLoading: false });
+        if (this.isActive) {
+          this.setState({ isLoading: false });
+        }
         console.log(err);
       });
   };
@@ -154,6 +198,10 @@ class EventPage extends Component {
       .catch(err => console.log(err));
   };
 
+  componentWillUnMount() {
+    this.isActive = false;
+  }
+
   render() {
     return (
       <React.Fragment>
@@ -198,7 +246,7 @@ class EventPage extends Component {
             title={this.state.selectedEvent.title}
             canConfirm={true}
             canCancel={true}
-            confirmText="Book"
+            confirmText={this.context.token ? "Book" : "Confirm"}
           >
             <h1>{this.state.selectedEvent.title}</h1>
             <h2>
