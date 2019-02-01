@@ -12,7 +12,12 @@ const BookingList = props => {
               {new Date(booking.createdAt).toLocaleDateString()}
             </div>
             <div className="bookings__item-action">
-              <button className="btn">Cancel</button>
+              <button
+                onClick={() => props.onDelete(booking._id)}
+                className="btn"
+              >
+                Cancel
+              </button>
             </div>
           </li>
         );

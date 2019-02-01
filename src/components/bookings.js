@@ -14,6 +14,46 @@ class BookingPage extends Component {
     this.fetchBookings();
   }
 
+  deleteBooking = id => {
+    this.setState({ isLoading: true });
+    const queryBody = {
+      query: ` mutation {
+                    cancelBooking(bookingId: "${id}") {
+                      _id
+                      title
+                    }
+        }
+      `
+    };
+    axios({
+      method: "post",
+      url:
+        "https://github-site-practice-infamousgodhand.c9users.io:8081/graphql",
+      data: queryBody,
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + this.context.token
+      }
+    })
+      .then(res => {
+        if (res.status !== 200 && res.status !== 201) {
+          throw new Error("Failed!");
+        }
+
+        this.setState(prevState => {
+          const updatedBookings = prevState.bookings.filter(booking => {
+            return booking._id !== id;
+          });
+          return { bookings: updatedBookings, isLoading: false };
+        });
+        //console.log(events);
+      })
+      .catch(err => {
+        this.setState({ isLoading: false });
+        console.log(err);
+      });
+  };
+
   static contextType = AuthContext;
 
   fetchBookings = () => {
@@ -62,7 +102,10 @@ class BookingPage extends Component {
         {this.state.isLoading ? (
           <Spinner />
         ) : (
-          <BookingList bookings={this.state.bookings} />
+          <BookingList
+            onDelete={this.deleteBooking}
+            bookings={this.state.bookings}
+          />
         )}
       </React.Fragment>
     );

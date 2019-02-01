@@ -141,12 +141,12 @@ class EventPage extends Component {
     const price = +this.priceRef.current.value;
     const description = this.descriptionRef.current.value;
 
-    const event = {
-      title,
-      date,
-      price,
-      description
-    };
+    // const event = {
+    //   title,
+    //   date,
+    //   price,
+    //   description
+    // };
     //console.log(event);
 
     const queryBody = {
